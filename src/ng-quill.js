@@ -89,7 +89,6 @@
       'ngModel': '<',
       'maxLength': '<',
       'minLength': '<',
-      'modelLength': '<',
       'translation': '<',
       'customOptions': '<?'
     },
@@ -223,7 +222,11 @@
         editor.on('text-change', function (delta, oldDelta, source) {
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
-
+          this.innerText = editor.getLength();
+          this.remainingChars = this.maxLength - this.innerText;
+          if(this.remainingChars < 0) {
+          this.remainingChars = 0;
+          }
           if (html === '<p><br></p>') {
             html = null
           }
@@ -240,11 +243,7 @@
                 if (editor.getLength() > this.maxLength) {
           			  editor.deleteText(this.maxLength, editor.getLength());
           		  }
-          		  this.innerText = editor.getLength();
-                this.remainingChars = this.maxLength - this.innerText;
-                if(this.remainingChars < 0) {
-                this.remainingChars = 0;
-                }
+
 
 
               }
@@ -264,13 +263,8 @@
 
         // provide event to get informed when editor is created -> pass editor object.
         if (this.onEditorCreated) {
-    		  this.innerText = editor.getLength();
-          this.remainingChars = this.maxLength - this.innerText;
-          if(this.remainingChars < 0) {
-          this.remainingChars = 0;
-          }
-
-        }
+               this.onEditorCreated({editor: editor})
+             }
       }
     }]
   })
