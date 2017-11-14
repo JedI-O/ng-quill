@@ -89,6 +89,8 @@
       'ngModel': '<',
       'maxLength': '<',
       'minLength': '<',
+      'modelLength': '<',
+      'translation': '<',
       'customOptions': '<?'
     },
     require: {
@@ -97,7 +99,7 @@
     transclude: {
       'toolbar': '?ngQuillToolbar'
     },
-    template: '<div class="ng-hide" ng-show="$ctrl.ready"><ng-transclude ng-transclude-slot="toolbar"></ng-transclude></div>',
+    template: '<div class="ng-hide" ng-show="$ctrl.ready"><ng-transclude ng-transclude-slot="toolbar"></ng-transclude></div>  <div >   <span style="float: right;">{{$ctrl.remainingChars }}  {{$ctrl.translation}}</span></div>',
     controller: ['$scope', '$element', '$timeout', '$transclude', 'ngQuillConfig', function ($scope, $element, $timeout, $transclude, ngQuillConfig) {
       var config = {}
       var content
@@ -106,8 +108,10 @@
       var editorChanged = false
       var editor
       var placeholder = ngQuillConfig.placeholder
-
+      this.innerText = '';
+      this.remainingChars = '';
       this.validate = function (text) {
+
         if (this.maxLength) {
           if (text.length > this.maxLength + 1) {
             this.ngModelCtrl.$setValidity('maxlength', false)
@@ -127,6 +131,7 @@
       }
 
       this.$onChanges = function (changes) {
+       // this.innerText = this.modelLength; //check if we need this ?
         if (changes.ngModel && changes.ngModel.currentValue !== changes.ngModel.previousValue) {
           content = changes.ngModel.currentValue
 
@@ -150,7 +155,6 @@
         if (this.placeholder !== null && this.placeholder !== undefined) {
           placeholder = this.placeholder.trim()
         }
-
         config = {
           theme: this.theme || ngQuillConfig.theme,
           readOnly: this.readOnly || ngQuillConfig.readOnly,
@@ -171,6 +175,7 @@
       }
 
       this._initEditor = function (editorElem) {
+
         var $editorElem = angular.element('<div></div>')
         var container = $element.children()
 
@@ -231,14 +236,17 @@
               this.ngModelCtrl.$setViewValue(html)
 
               if (this.onContentChanged) {
-                this.onContentChanged({
-                  editor: editor,
-                  html: html,
-                  text: text,
-                  delta: delta,
-                  oldDelta: oldDelta,
-                  source: source
-                })
+
+                if (editor.getLength() > this.maxLength) {
+          			  editor.deleteText(this.maxLength, editor.getLength());
+          		  }
+          		  this.innerText = editor.getLength();
+                this.remainingChars = this.maxLength - this.innerText;
+                if(this.remainingChars < 0) {
+                this.remainingChars = 0;
+                }
+
+
               }
             }.bind(this))
           }
@@ -256,7 +264,12 @@
 
         // provide event to get informed when editor is created -> pass editor object.
         if (this.onEditorCreated) {
-          this.onEditorCreated({editor: editor})
+    		  this.innerText = editor.getLength();
+          this.remainingChars = this.maxLength - this.innerText;
+          if(this.remainingChars < 0) {
+          this.remainingChars = 0;
+          }
+
         }
       }
     }]
