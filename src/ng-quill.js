@@ -135,6 +135,13 @@
           content = changes.ngModel.currentValue
 
           if (editor && !editorChanged) {
+            /*set remaining Chars by cropping Quill newline chars*/
+            this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
+            // initializing the remainingchars
+            this.remainingChars = this.maxLength - this.innerTextLength;
+            if(this.remainingChars < 0) {
+              this.remainingChars = 0;
+            }
             modelChanged = true
             if (content) {
               editor.setContents(editor.clipboard.convert(content))
@@ -224,6 +231,7 @@
           var text = editor.getText()
           /*set remaining Chars by cropping Quill newline chars*/
           this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
+            // update the remainingchars on changes
           this.remainingChars = this.maxLength - this.innerTextLength;
           if(this.remainingChars < 0) {
             this.remainingChars = 0;
