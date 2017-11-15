@@ -107,7 +107,7 @@
       var editorChanged = false
       var editor
       var placeholder = ngQuillConfig.placeholder
-      this.innerText = '';
+      this.innerTextLength = '';
       this.remainingChars = '';
       this.validate = function (text) {
 
@@ -130,7 +130,7 @@
       }
 
       this.$onChanges = function (changes) {
-       // this.innerText = this.modelLength; //check if we need this ?
+
         if (changes.ngModel && changes.ngModel.currentValue !== changes.ngModel.previousValue) {
           content = changes.ngModel.currentValue
 
@@ -222,10 +222,11 @@
         editor.on('text-change', function (delta, oldDelta, source) {
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
-          this.innerText = editor.getLength();
-          this.remainingChars = this.maxLength - this.innerText;
+          /*set remaining Chars by cropping Quill newline chars*/
+          this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
+          this.remainingChars = this.maxLength - this.innerTextLength;
           if(this.remainingChars < 0) {
-          this.remainingChars = 0;
+            this.remainingChars = 0;
           }
           if (html === '<p><br></p>') {
             html = null
@@ -264,7 +265,7 @@
         // provide event to get informed when editor is created -> pass editor object.
         if (this.onEditorCreated) {
                this.onEditorCreated({editor: editor})
-             }
+        }
       }
     }]
   })
