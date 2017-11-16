@@ -110,8 +110,7 @@
       this.innerTextLength = '';
       this.remainingChars = '';
       this.validate = function (text) {
-
-        if (this.maxLength) {
+           if (this.maxLength) {
           if (text.length > this.maxLength + 1) {
             this.ngModelCtrl.$setValidity('maxlength', false)
           } else {
@@ -128,6 +127,16 @@
           }
         }
       }
+      this.setRemainingChars = function (text) {
+
+        /*set remaining Chars by cropping Quill newline chars*/
+        this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
+        // update the remainingchars
+        this.remainingChars = this.maxLength - this.innerTextLength;
+        if(this.remainingChars < 0) {
+          this.remainingChars = 0;
+        }
+      }
 
       this.$onChanges = function (changes) {
 
@@ -135,13 +144,6 @@
           content = changes.ngModel.currentValue
 
           if (editor && !editorChanged) {
-            /*set remaining Chars by cropping Quill newline chars*/
-            this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
-            // initializing the remainingchars
-            this.remainingChars = this.maxLength - this.innerTextLength;
-            if(this.remainingChars < 0) {
-              this.remainingChars = 0;
-            }
             modelChanged = true
             if (content) {
               editor.setContents(editor.clipboard.convert(content))
@@ -158,6 +160,7 @@
       }
 
       this.$onInit = function () {
+
         if (this.placeholder !== null && this.placeholder !== undefined) {
           placeholder = this.placeholder.trim()
         }
@@ -174,6 +177,7 @@
       }
 
       this.$postLink = function () {
+
         // create quill instance after dom is rendered
         $timeout(function () {
           this._initEditor(editorElem)
@@ -204,6 +208,8 @@
 
         editor = new Quill(editorElem, config)
 
+       this.setRemainingChars();
+
         this.ready = true
 
         // mark model as touched if editor lost focus
@@ -229,16 +235,12 @@
         editor.on('text-change', function (delta, oldDelta, source) {
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
-          /*set remaining Chars by cropping Quill newline chars*/
-          this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
-            // update the remainingchars on changes
-          this.remainingChars = this.maxLength - this.innerTextLength;
-          if(this.remainingChars < 0) {
-            this.remainingChars = 0;
-          }
+          this.setRemainingChars();
+
           if (html === '<p><br></p>') {
             html = null
           }
+
           this.validate(text)
 
           if (!modelChanged) {
@@ -273,6 +275,7 @@
         // provide event to get informed when editor is created -> pass editor object.
         if (this.onEditorCreated) {
                this.onEditorCreated({editor: editor})
+
         }
       }
     }]
@@ -280,3 +283,4 @@
 
   return app.name
 }))
+
