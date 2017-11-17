@@ -263,6 +263,12 @@
           modelChanged = false
         }.bind(this))
 
+        //initialize content in case of undefined
+        if (typeof content === 'undefined') {
+          var Delta = Quill.import('delta')
+          editor.setContents(new Delta ([{ insert: ' '}]))
+        }
+
         // set initial content
         if (content) {
           modelChanged = true
