@@ -214,6 +214,13 @@
 
         // mark model as touched if editor lost focus
         editor.on('selection-change', function (range, oldRange, source) {
+          //add class 'focused' on ql-container when editor gets focused
+          if (editor.hasFocus()) {
+            angular.element(editorElem).addClass('focused');
+          } else {
+            angular.element(editorElem).removeClass('focused');
+          }
+
           if (this.onSelectionChanged) {
             this.onSelectionChanged({
               editor: editor,
