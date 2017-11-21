@@ -257,12 +257,23 @@
               this.ngModelCtrl.$setViewValue(html)
 
               if (this.onContentChanged) {
+                  this.onContentChanged({
+                    editor: editor,
+                    html: html,
+                    text: text,
+                    delta: delta,
+                    oldDelta: oldDelta,
+                    source: source
+                  })
 
-                if (editor.getLength() > this.maxLength) {
-          			  editor.deleteText(this.maxLength, editor.getLength());
-          		  }
-
-
+                  /*clip longer text than max length account (with break-line character normalizer)*/
+                  if (editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
+                    /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
+                     * This is why we have to take break line characters into consideration, when we pass an index number inside the
+                     * deleteText method*/
+                    var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length);
+                    editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
+                  }
 
               }
             }.bind(this))
