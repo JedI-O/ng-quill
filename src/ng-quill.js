@@ -271,7 +271,7 @@
                     /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
                      * This is why we have to take break line characters into consideration, when we pass an index number inside the
                      * deleteText method*/
-                    var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length);
+                    var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length) - 1;
                     editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
                   }
 
