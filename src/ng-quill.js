@@ -98,7 +98,7 @@
     transclude: {
       'toolbar': '?ngQuillToolbar'
     },
-    template: '<div class="ng-hide" ng-show="$ctrl.ready"><ng-transclude ng-transclude-slot="toolbar"></ng-transclude></div>  <div >   <span style="float: right;">{{$ctrl.remainingChars }}  {{$ctrl.translation}}</span></div>',
+    template: '<div class="ng-hide" ng-show="$ctrl.ready"><ng-transclude ng-transclude-slot="toolbar"></ng-transclude></div>',
     controller: ['$scope', '$element', '$timeout', '$transclude', 'ngQuillConfig', function ($scope, $element, $timeout, $transclude, ngQuillConfig) {
       var config = {}
       var content
@@ -208,7 +208,9 @@
 
         editor = new Quill(editorElem, config)
 
-       this.setRemainingChars();
+        this.setRemainingChars();
+        /* append character count element after the editor and initialize it with char count*/
+        angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.remainingChars + this.translation +'</div>')
 
         this.ready = true
 
@@ -245,7 +247,8 @@
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
           this.setRemainingChars();
-
+          /* update remaining chars everytime text is changed*/
+          angular.element(editorElem).next().html( this.remainingChars + ' ' + this.translation);
           if (html === '<p><br></p>') {
             html = null
           }
