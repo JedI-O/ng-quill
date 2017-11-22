@@ -216,9 +216,11 @@
         editor.on('selection-change', function (range, oldRange, source) {
           //add class 'focused' on ql-container when editor gets focused
           if (editor.hasFocus()) {
-            angular.element(editorElem).addClass('focused');
+            angular.element(editorElem).addClass('focused')
+            angular.element(editorElem).prev().addClass('focused')
           } else {
-            angular.element(editorElem).removeClass('focused');
+            angular.element(editorElem).removeClass('focused')
+            angular.element(editorElem).prev().removeClass('focused')
           }
 
           if (this.onSelectionChanged) {
