@@ -98,7 +98,7 @@
     transclude: {
       'toolbar': '?ngQuillToolbar'
     },
-    template: '<div class="ng-hide" ng-show="$ctrl.ready"><ng-transclude ng-transclude-slot="toolbar"></ng-transclude></div>  <div >   <span style="float: right;">{{$ctrl.remainingChars }}  {{$ctrl.translation}}</span></div>',
+    template: '<div class="ng-hide" ng-show="$ctrl.ready"><ng-transclude ng-transclude-slot="toolbar"></ng-transclude></div>',
     controller: ['$scope', '$element', '$timeout', '$transclude', 'ngQuillConfig', function ($scope, $element, $timeout, $transclude, ngQuillConfig) {
       var config = {}
       var content
@@ -136,6 +136,9 @@
         if(this.remainingChars < 0) {
           this.remainingChars = 0;
         }
+
+
+
       }
 
       this.$onChanges = function (changes) {
@@ -208,12 +211,23 @@
 
         editor = new Quill(editorElem, config)
 
-       this.setRemainingChars();
+        this.setRemainingChars();
+        /* append character count element after the editor and initialize it with char count*/
+        angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.remainingChars + this.translation +'</div>')
 
         this.ready = true
 
         // mark model as touched if editor lost focus
         editor.on('selection-change', function (range, oldRange, source) {
+          //add class 'focused' on ql-container when editor gets focused
+          if (editor.hasFocus()) {
+            angular.element(editorElem).addClass('focused')
+            angular.element(editorElem).prev().addClass('focused')
+          } else {
+            angular.element(editorElem).removeClass('focused')
+            angular.element(editorElem).prev().removeClass('focused')
+          }
+
           if (this.onSelectionChanged) {
             this.onSelectionChanged({
               editor: editor,
@@ -236,32 +250,48 @@
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
           this.setRemainingChars();
-
+          /* update remaining chars everytime text is changed*/
+          angular.element(editorElem).next().html( this.remainingChars + ' ' + this.translation);
           if (html === '<p><br></p>') {
             html = null
           }
 
           this.validate(text)
 
-          if (!modelChanged) {
             $scope.$applyAsync(function () {
               editorChanged = true
 
               this.ngModelCtrl.$setViewValue(html)
 
               if (this.onContentChanged) {
-
-                if (editor.getLength() > this.maxLength) {
-          			  editor.deleteText(this.maxLength, editor.getLength());
-          		  }
-
-
+                  this.onContentChanged({
+                    editor: editor,
+                    html: html,
+                    text: text,
+                    delta: delta,
+                    oldDelta: oldDelta,
+                    source: source
+                  })
+                  /*clip longer text than max length account (with break-line character normalizer)*/
+                  if (editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
+                    /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
+                     * This is why we have to take break line characters into consideration, when we pass an index number inside the
+                     * deleteText method*/
+                    var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length) - 1;
+                    editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
+                  }
 
               }
             }.bind(this))
-          }
+
+
           modelChanged = false
         }.bind(this))
+        //initialize content in case of undefined
+        if (typeof content === 'undefined') {
+          var Delta = Quill.import('delta')
+          editor.setContents(new Delta ([{ insert: ' '}]))
+        }
 
         // set initial content
         if (content) {
