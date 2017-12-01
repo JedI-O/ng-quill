@@ -90,7 +90,12 @@
       'maxLength': '<',
       'minLength': '<',
       'translation': '<',
-      'customOptions': '<?'
+      'customOptions': '<?',
+      'initContent': '<',
+      'ngRequired':'<'
+
+
+
     },
     require: {
       ngModelCtrl: 'ngModel'
@@ -109,46 +114,29 @@
       var placeholder = ngQuillConfig.placeholder
       this.innerTextLength = '';
       this.remainingChars = '';
-      this.validate = function (text) {
-           if (this.maxLength) {
-          if (text.length > this.maxLength + 1) {
-            this.ngModelCtrl.$setValidity('maxlength', false)
-          } else {
-            this.ngModelCtrl.$setValidity('maxlength', true)
-          }
-        }
-
-        if (this.minLength > 1) {
-          // validate only if text.length > 1
-          if (text.length <= this.minLength && text.length > 1) {
-            this.ngModelCtrl.$setValidity('minlength', false)
-          } else {
-            this.ngModelCtrl.$setValidity('minlength', true)
-          }
-        }
-      }
       this.setRemainingChars = function (text) {
 
         /*set remaining Chars by cropping Quill newline chars*/
         this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
         // update the remainingchars
+        if(this.maxLength ){
         this.remainingChars = this.maxLength - this.innerTextLength;
         if(this.remainingChars < 0) {
           this.remainingChars = 0;
         }
-
+       }
 
 
       }
 
       this.$onChanges = function (changes) {
-
         if (changes.ngModel && changes.ngModel.currentValue !== changes.ngModel.previousValue) {
           content = changes.ngModel.currentValue
+          if (editor && !editorChanged ) {
 
-          if (editor && !editorChanged) {
             modelChanged = true
             if (content) {
+
               editor.setContents(editor.clipboard.convert(content))
             } else {
               editor.setText('')
@@ -212,17 +200,26 @@
         editor = new Quill(editorElem, config)
 
         this.setRemainingChars();
+        if(this.maxLength){
         /* append character count element after the editor and initialize it with char count*/
-        angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.remainingChars + this.translation +'</div>')
-
+        angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.remainingChars + ' ' + this.translation +'</div>')
+       }
         this.ready = true
-
         // mark model as touched if editor lost focus
         editor.on('selection-change', function (range, oldRange, source) {
+
+          //TODO add the scroll class
+          // angular.element(editorElem).addClass('scroll')
+          // angular.element(editorElem).addClass('containerContentScrollClass')
+           //TODO add error class when form is invalid because of required field
+          // angular.element(editorElem).addClass('error')
+
           //add class 'focused' on ql-container when editor gets focused
           if (editor.hasFocus()) {
             angular.element(editorElem).addClass('focused')
             angular.element(editorElem).prev().addClass('focused')
+            this.ngModelCtrl.$setDirty(); //make form dirty when editor is touched
+            this.ngModelCtrl.$setTouched();
           } else {
             angular.element(editorElem).removeClass('focused')
             angular.element(editorElem).prev().removeClass('focused')
@@ -250,18 +247,19 @@
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
           this.setRemainingChars();
+          if(this.maxLength){
           /* update remaining chars everytime text is changed*/
           angular.element(editorElem).next().html( this.remainingChars + ' ' + this.translation);
+          }
           if (html === '<p><br></p>') {
             html = null
           }
-
-          this.validate(text)
-
+  // console.log('editorChanged',modelChanged,editorChanged )
+//TODO we need another check conditon for cases modelcahne or editorchange to execute the deletion function !
+   if (!modelChanged ) {
             $scope.$applyAsync(function () {
-              editorChanged = true
-
-              this.ngModelCtrl.$setViewValue(html)
+            editorChanged = true
+            this.ngModelCtrl.$setViewValue(html)
 
               if (this.onContentChanged) {
                   this.onContentChanged({
@@ -273,22 +271,26 @@
                     source: source
                   })
                   /*clip longer text than max length account (with break-line character normalizer)*/
-                  if (editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
+                  if (this.maxLength && editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
                     /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
                      * This is why we have to take break line characters into consideration, when we pass an index number inside the
                      * deleteText method*/
                     var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length) - 1;
                     editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
+
                   }
 
               }
-            }.bind(this))
 
+            }.bind(this))
+  }
 
           modelChanged = false
         }.bind(this))
+
         //initialize content in case of undefined
-        if (typeof content === 'undefined') {
+        //TODO this part causes initially the form to be dirty so the solution was to set the from initially to pristine inside the from Ctrl where we use ng quil directive
+        if (typeof content === 'undefined' && typeof this.initContent === 'undefined' ) { // added extra condition so we can ignore this condition whenever we want by setting the initContent true in the nq quil directive
           var Delta = Quill.import('delta')
           editor.setContents(new Delta ([{ insert: ' '}]))
         }
@@ -296,7 +298,6 @@
         // set initial content
         if (content) {
           modelChanged = true
-
           var contents = editor.clipboard.convert(content)
           editor.setContents(contents)
           editor.history.clear()
@@ -307,6 +308,7 @@
                this.onEditorCreated({editor: editor})
 
         }
+
       }
     }]
   })
