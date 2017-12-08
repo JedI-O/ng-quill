@@ -93,9 +93,6 @@
       'customOptions': '<?',
       'initContent': '<',
       'ngRequired':'<'
-
-
-
     },
     require: {
       ngModelCtrl: 'ngModel'
@@ -208,10 +205,7 @@
         // mark model as touched if editor lost focus
         editor.on('selection-change', function (range, oldRange, source) {
 
-          //TODO add the scroll class
-          // angular.element(editorElem).addClass('scroll')
-          // angular.element(editorElem).addClass('containerContentScrollClass')
-           //TODO add error class when form is invalid because of required field
+          //TODO add error class when form is invalid because of required field
           // angular.element(editorElem).addClass('error')
 
           //add class 'focused' on ql-container when editor gets focused
@@ -255,7 +249,7 @@
             html = null
           }
   // console.log('editorChanged',modelChanged,editorChanged )
-//TODO we need another check conditon for cases modelcahne or editorchange to execute the deletion function !
+  // TODO we need another check condition for cases modelChanged or editorChanged to execute the deletion function !
    if (!modelChanged ) {
             $scope.$applyAsync(function () {
             editorChanged = true
@@ -289,7 +283,8 @@
         }.bind(this))
 
         //initialize content in case of undefined
-        //TODO this part causes initially the form to be dirty so the solution was to set the from initially to pristine inside the from Ctrl where we use ng quil directive
+        /*this part causes initially the form to be dirty.
+        The solution was to set the from initially to pristine inside the from Ctrl where ng-quill directive is used*/
         if (typeof content === 'undefined' && typeof this.initContent === 'undefined' ) { // added extra condition so we can ignore this condition whenever we want by setting the initContent true in the nq quil directive
           var Delta = Quill.import('delta')
           editor.setContents(new Delta ([{ insert: ' '}]))
