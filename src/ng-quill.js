@@ -140,10 +140,10 @@
 
             modelChanged = true
             if (content) {
-
               editor.setContents(editor.clipboard.convert(content))
             } else {
               editor.setText('')
+              modelChanged = false;
             }
           }
           editorChanged = false
@@ -267,47 +267,46 @@
           if (html === '<p><br></p>') {
             html = null
           }
-  // console.log('editorChanged',modelChanged,editorChanged )
-  // TODO we need another check condition for cases modelChanged or editorChanged to execute the deletion function !
-   if (!modelChanged ) {
+
+          // TODO we need another check condition for cases modelChanged or editorChanged to execute the deletion function !
+          if (!modelChanged ) {
             $scope.$applyAsync(function () {
-            editorChanged = true
-            this.ngModelCtrl.$setViewValue(html)
+              editorChanged = true
+              this.ngModelCtrl.$setViewValue(html)
 
-              if (this.onContentChanged) {
-                  this.onContentChanged({
-                    editor: editor,
-                    html: html,
-                    text: text,
-                    delta: delta,
-                    oldDelta: oldDelta,
-                    source: source
-                  })
-                  /*clip longer text than max length account (with break-line character normalizer)*/
-                  if (this.maxLength && editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
-                    /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
-                     * This is why we have to take break line characters into consideration, when we pass an index number inside the
-                     * deleteText method*/
-                    var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length) - 1;
-                    editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
+                if (this.onContentChanged) {
+                    this.onContentChanged({
+                      editor: editor,
+                      html: html,
+                      text: text,
+                      delta: delta,
+                      oldDelta: oldDelta,
+                      source: source
+                    })
+                    /*clip longer text than max length account (with break-line character normalizer)*/
+                    if (this.maxLength && editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
+                      /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
+                       * This is why we have to take break line characters into consideration, when we pass an index number inside the
+                       * deleteText method*/
+                      var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length) - 1;
+                      editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
 
-                  }
+                    }
 
-              }
-
+                }
             }.bind(this))
-  }
+          }
 
           modelChanged = false
         }.bind(this))
 
-        //initialize content in case of undefined
+        //initialize content in case of undefined (after last changes not more needed (remove after code is tested))
         /*this part causes initially the form to be dirty.
         The solution was to set the from initially to pristine inside the from Ctrl where ng-quill directive is used*/
-        if (typeof content === 'undefined' && typeof this.initContent === 'undefined' ) { // added extra condition so we can ignore this condition whenever we want by setting the initContent true in the nq quil directive
+        /*if (typeof content === 'undefined' && typeof this.initContent === 'undefined' ) { // added extra condition so we can ignore this condition whenever we want by setting the initContent true in the nq quil directive
           var Delta = Quill.import('delta')
           editor.setContents(new Delta ([{ insert: ' '}]))
-        }
+        }*/
 
         // set initial content
         if (content) {
