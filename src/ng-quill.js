@@ -93,7 +93,8 @@
       'customOptions': '<?',
       'initContent': '<',
       'charsCount': '<',
-      'ngRequired':'<'
+      'ngRequired':'<',
+      'resetQuil':'<'
     },
     require: {
       ngModelCtrl: 'ngModel'
@@ -221,6 +222,7 @@
         // mark model as touched if editor lost focus
         editor.on('selection-change', function (range, oldRange, source) {
 
+         if(this.resetQuil) editor.setText('') // reset the content of the editor after reseting the form 
 
           //add class 'focused' on ql-container when editor gets focused
           if (editor.hasFocus()) {
