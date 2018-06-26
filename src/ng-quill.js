@@ -196,7 +196,7 @@
         this.ready = true
 
         // mark model as touched if editor lost focus
-        editor.on('selection-change', function (range, oldRange, source) {
+        var selectionChangeEvent = editor.on('selection-change', function (range, oldRange, source) {
           if (this.onSelectionChanged) {
             this.onSelectionChanged({
               editor: editor,
@@ -215,7 +215,7 @@
         }.bind(this))
 
         // update model if text changes
-        editor.on('text-change', function (delta, oldDelta, source) {
+        var textChangeEvent = editor.on('text-change', function (delta, oldDelta, source) {
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
 
@@ -244,6 +244,12 @@
           }
           modelChanged = false
         }.bind(this))
+
+        // Destroy event listeners when scope gets destroyed in order to prevent memory leaks
+        $scope.$on('$destroy', function() {
+            textChangeEvent.removeListener('text-change');
+            selectionChangeEvent.removeListener('selection-change');
+          });
 
         // set initial content
         if (content) {
