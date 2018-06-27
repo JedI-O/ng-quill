@@ -220,7 +220,7 @@
        }
         this.ready = true
         // mark model as touched if editor lost focus
-        editor.on('selection-change', function (range, oldRange, source) {
+        var selectionChangeEvent = editor.on('selection-change', function (range, oldRange, source) {
 
          if(this.resetQuil) editor.setText('') // reset the content of the editor after reseting the form 
 
@@ -253,7 +253,7 @@
         }.bind(this))
 
         // update model if text changes
-        editor.on('text-change', function (delta, oldDelta, source) {
+        var textChangeEvent = editor.on('text-change', function (delta, oldDelta, source) {
           var html = editorElem.children[0].innerHTML
           var text = editor.getText()
           this.setRemainingChars();
@@ -301,6 +301,11 @@
 
           modelChanged = false
         }.bind(this))
+
+        $scope.$on('$destroy', function() {
+          textChangeEvent.removeListener('text-change');
+          selectionChangeEvent.removeListener('selection-change');
+        });
 
         //initialize content in case of undefined (after last changes not more needed (remove after code is tested))
         /*this part causes initially the form to be dirty.
