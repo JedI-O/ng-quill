@@ -119,11 +119,11 @@
         this.innerTextLength = editor.getText().replace(/\r|\n/g, '').length;
         // update the remainingchars
         if(this.maxLength ){
-        this.remainingChars = this.maxLength - this.innerTextLength;
-        if(this.remainingChars < 0) {
-          this.remainingChars = 0;
+          this.remainingChars = this.maxLength - this.innerTextLength;
+          if(this.remainingChars < 0) {
+            this.remainingChars = 0;
+          }
         }
-       }
 
 
       }
@@ -174,6 +174,8 @@
 
       this.$postLink = function () {
 
+
+
         // create quill instance after dom is rendered
         $timeout(function () {
           this._initEditor(editorElem)
@@ -182,28 +184,6 @@
 
       this._initEditor = function (editorElem) {
 
-        // Strip HTML tags and attributes except those which ng-quill uses currently (Attention: Our own settings!).
-        // So that any legacy data in ng-quill content or copy&pasted things or whatever won't cause any trouble.
-        // This is, however, not a security action! Any attacker could bypass this!
-        if(sanitizeHtml) {
-          this.ngModelCtrl.$modelValue = sanitizeHtml(this.ngModelCtrl.$modelValue,{
-            allowedTags: ['a',
-              'b',
-              'br',
-              'em',
-              'i',
-              'li',
-              'ol',
-              'p',
-              'strong',
-              'u',
-              'ul' ],
-            allowedAttributes: {
-              '*': [ 'href', 'class','target']
-            },
-            allowedSchemes: ['http', 'https', 'ftp', 'mailto']
-          });
-        }
 
         var $editorElem = angular.element('<div></div>')
         var container = $element.children()
@@ -225,27 +205,54 @@
           })
         }
 
-        editor = new Quill(editorElem, config)
+        editor = new Quill(editorElem, config);
+
+        // Strip HTML tags and attributes except those which ng-quill uses currently (Attention: Our own settings!).
+        // So that any legacy data in ng-quill content or copy&pasted things or whatever won't cause any trouble.
+        // This is, however, not a security action! Any attacker could bypass this!
+        if(sanitizeHtml) {
+          var modelValueBefore = "" + this.ngModelCtrl.$modelValue;
+          var modelValueAfter = "" + sanitizeHtml(modelValueBefore,{
+                allowedTags: ['a',
+                  'b',
+                  'br',
+                  'em',
+                  'i',
+                  'li',
+                  'ol',
+                  'p',
+                  'strong',
+                  'u',
+                  'ul' ],
+                allowedAttributes: {
+                  '*': [ 'href', 'class','target']
+                },
+                allowedSchemes: ['http', 'https', 'ftp', 'mailto']
+              });
+          if(modelValueAfter !== modelValueBefore) {
+            editorElem.children[0].innerHTML = modelValueAfter
+          }
+        }
 
         this.setRemainingChars();
 
 
         if(this.maxLength){
-        /* append character count element after the editor and initialize it with char count*/
-        angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.remainingChars + ' ' + this.translation +'</div>')
-       }
+          /* append character count element after the editor and initialize it with char count*/
+          angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.remainingChars + ' ' + this.translation +'</div>')
+        }
 
-       if(this.charsCount){
-         this.setCharsCount();
-         /* append character count element after the editor and initialize it with char count*/
-         angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.innerTextLength + ' ' + this.translation +'</div>')
+        if(this.charsCount){
+          this.setCharsCount();
+          /* append character count element after the editor and initialize it with char count*/
+          angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.innerTextLength + ' ' + this.translation +'</div>')
 
-       }
+        }
         this.ready = true
         // mark model as touched if editor lost focus
         var selectionChangeEvent = editor.on('selection-change', function (range, oldRange, source) {
 
-         if(this.resetQuil) editor.setText('') // reset the content of the editor after reseting the form 
+          if(this.resetQuil) editor.setText('') // reset the content of the editor after reseting the form
 
           //add class 'focused' on ql-container when editor gets focused
           if (editor.hasFocus()) {
@@ -281,8 +288,8 @@
           var text = editor.getText()
           this.setRemainingChars();
           if(this.maxLength){
-          /* update remaining chars everytime text is changed*/
-          angular.element(editorElem).next().html( this.remainingChars + ' ' + this.translation);
+            /* update remaining chars everytime text is changed*/
+            angular.element(editorElem).next().html( this.remainingChars + ' ' + this.translation);
           }
           if(this.charsCount){
             this.setCharsCount();
@@ -299,26 +306,26 @@
               editorChanged = true
               this.ngModelCtrl.$setViewValue(html)
 
-                if (this.onContentChanged) {
-                    this.onContentChanged({
-                      editor: editor,
-                      html: html,
-                      text: text,
-                      delta: delta,
-                      oldDelta: oldDelta,
-                      source: source
-                    })
-                    /*clip longer text than max length account (with break-line character normalizer)*/
-                    if (this.maxLength && editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
-                      /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
-                       * This is why we have to take break line characters into consideration, when we pass an index number inside the
-                       * deleteText method*/
-                      var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length) - 1;
-                      editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
-
-                    }
+              if (this.onContentChanged) {
+                this.onContentChanged({
+                  editor: editor,
+                  html: html,
+                  text: text,
+                  delta: delta,
+                  oldDelta: oldDelta,
+                  source: source
+                })
+                /*clip longer text than max length account (with break-line character normalizer)*/
+                if (this.maxLength && editor.getText().replace(/\r|\n/g, '').length > this.maxLength) {
+                  /*editor always counts break lines as characters. Thus maxLength should be dynamic and grow as break lines as added.
+                   * This is why we have to take break line characters into consideration, when we pass an index number inside the
+                   * deleteText method*/
+                  var maxLengthWithBreakLines = this.maxLength + (editor.getLength() - editor.getText().replace(/\r|\n/g, '').length) - 1;
+                  editor.deleteText(maxLengthWithBreakLines, editor.getText().replace(/\r|\n/g, '').length);
 
                 }
+
+              }
             }.bind(this))
           }
 
@@ -332,11 +339,11 @@
 
         //initialize content in case of undefined (after last changes not more needed (remove after code is tested))
         /*this part causes initially the form to be dirty.
-        The solution was to set the from initially to pristine inside the from Ctrl where ng-quill directive is used*/
+         The solution was to set the from initially to pristine inside the from Ctrl where ng-quill directive is used*/
         /*if (typeof content === 'undefined' && typeof this.initContent === 'undefined' ) { // added extra condition so we can ignore this condition whenever we want by setting the initContent true in the nq quil directive
-          var Delta = Quill.import('delta')
-          editor.setContents(new Delta ([{ insert: ' '}]))
-        }*/
+         var Delta = Quill.import('delta')
+         editor.setContents(new Delta ([{ insert: ' '}]))
+         }*/
 
         // set initial content
         if (content) {
@@ -348,7 +355,7 @@
 
         // provide event to get informed when editor is created -> pass editor object.
         if (this.onEditorCreated) {
-               this.onEditorCreated({editor: editor})
+          this.onEditorCreated({editor: editor})
 
         }
 
