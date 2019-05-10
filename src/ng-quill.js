@@ -182,6 +182,29 @@
 
       this._initEditor = function (editorElem) {
 
+        // Strip HTML tags and attributes except those which ng-quill uses currently (Attention: Our own settings!).
+        // So that any legacy data in ng-quill content or copy&pasted things or whatever won't cause any trouble.
+        // This is, however, not a security action! Any attacker could bypass this!
+        if(sanitizeHtml) {
+          this.ngModelCtrl.$modelValue = sanitizeHtml(this.ngModelCtrl.$modelValue,{
+            allowedTags: ['a',
+              'b',
+              'br',
+              'em',
+              'i',
+              'li',
+              'ol',
+              'p',
+              'strong',
+              'u',
+              'ul' ],
+            allowedAttributes: {
+              '*': [ 'href', 'class','target']
+            },
+            allowedSchemes: ['http', 'https', 'ftp', 'mailto']
+          });
+        }
+
         var $editorElem = angular.element('<div></div>')
         var container = $element.children()
 
