@@ -230,6 +230,7 @@
                 allowedSchemes: ['http', 'https', 'ftp', 'mailto']
               });
           if(modelValueAfter !== modelValueBefore) {
+            content = null;
             editorElem.children[0].innerHTML = modelValueAfter
           }
         }
