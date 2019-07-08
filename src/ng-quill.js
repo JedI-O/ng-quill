@@ -229,6 +229,8 @@
                 },
                 allowedSchemes: ['http', 'https', 'ftp', 'mailto']
               });
+
+          modelValueAfter = modelValueAfter.replace(/<br \/>/g,'<br>'); // Ignore changes from "<br>" to "<br />" - which cause problems.
           if(modelValueAfter !== modelValueBefore) {
             editorElem.children[0].innerHTML = modelValueAfter
           }
