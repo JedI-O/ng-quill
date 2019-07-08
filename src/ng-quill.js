@@ -212,6 +212,7 @@
         // This is, however, not a security action! Any attacker could bypass this!
         if(sanitizeHtml) {
           var modelValueBefore = "" + this.ngModelCtrl.$modelValue;
+
           var modelValueAfter = "" + sanitizeHtml(modelValueBefore,{
                 allowedTags: ['a',
                   'b',
@@ -230,7 +231,9 @@
                 allowedSchemes: ['http', 'https', 'ftp', 'mailto']
               });
 
-          modelValueAfter = modelValueAfter.replace(/<br \/>/g,'<br>'); // Ignore changes from "<br>" to "<br />" - which cause problems.
+          modelValueBefore = modelValueBefore.replace(/<br>/g,'<br/>'); // Change from <br> to <br/> for consistency.
+          modelValueAfter = modelValueAfter.replace(/<br \/>/g,'<br/>'); // Ignore changes from "<br>" to "<br />" - which cause problems.
+
           if(modelValueAfter !== modelValueBefore) {
             editorElem.children[0].innerHTML = modelValueAfter
           }
