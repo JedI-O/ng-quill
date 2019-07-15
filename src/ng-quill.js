@@ -235,6 +235,7 @@
           modelValueAfter = modelValueAfter.replace(/<br \/>/g,'<br/>'); // Ignore changes from "<br>" to "<br />" - which cause problems.
 
           if(modelValueAfter !== modelValueBefore) {
+            content = null; //  Necessary to set content to 'null' to avoid duplicate values in field. Test with copy&pasting <hr/>Linie Grützenheiner Stümmel Bröffel  <hr/> into ng-quill and then save
             editorElem.children[0].innerHTML = modelValueAfter
           }
         }
