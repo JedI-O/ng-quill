@@ -242,13 +242,16 @@
 
         this.setRemainingChars();
 
+        if(this.maxLength && this.charsCount) {
+          console.error("Dear developer! Setting both maxLength (max-length) and charsCount (chars-count) is FORBIDDEN! If maxLength is set, then charsCount should NOT be set!");
+        }
 
         if(this.maxLength){
           /* append character count element after the editor and initialize it with char count*/
           angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.remainingChars + ' ' + this.translation +'</div>')
         }
 
-        if(this.charsCount){
+        if(this.charsCount && !this.maxLength){
           this.setCharsCount();
           /* append character count element after the editor and initialize it with char count*/
           angular.element(editorElem).after('<div class="ql-InnerCharCount">' + this.innerTextLength + ' ' + this.translation +'</div>')
@@ -297,7 +300,7 @@
             /* update remaining chars everytime text is changed*/
             angular.element(editorElem).next().html( this.remainingChars + ' ' + this.translation);
           }
-          if(this.charsCount){
+          if(this.charsCount && !this.maxLength){
             this.setCharsCount();
             /* append character count element after the editor and initialize it with char count*/
             angular.element(editorElem).next().html( this.innerTextLength + ' ' + this.translation);
